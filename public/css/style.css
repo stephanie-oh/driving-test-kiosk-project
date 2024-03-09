@@ -1,0 +1,141 @@
+/* // <uniquifier>: Use a uniquifier for the class name
+// <weight>: Use a value from 200 to 1000 */
+
+@font-face {
+    font-family: 'subtle_curvesregular';
+    src: url('/fonts/Subtle/subtlecurves-ez4y6-webfont.woff2') format('woff2'),
+         url('/fonts/Subtle/subtlecurves-ez4y6-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --bg-1: #030201;
+    --bg-2:  #F0F0F2;
+    --col: #BF3604;
+    --col2: #F27405;
+    --col3: #F29F05;
+    --col4: #F28705;
+    --f-main: "subtle_curvesregular", sans-serif;
+    --f-p: "Nunito", sans-serif;
+}
+
+.nunito-<uniquifier> {
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
+
+body {
+    margin: 0px;
+    width: 100%
+}
+
+h1 {
+    font-family: var(--f-main);
+    font-size: 4em;
+}
+
+p, 
+a, 
+label, 
+legend {
+    font-family: var(--f-p)
+}
+
+h2 {
+    font-family: var(--f-p);
+    font-weight: 800;
+}
+
+.main {
+    background-color: var(--bg-2);                                                                                                                                      
+}
+
+.header {
+    background-color: var(--bg-1);
+    padding: 20px;
+    text-align: center;
+    color: white;
+}
+
+.main {
+    margin: 0;
+    padding-left: 20px;
+    overflow: hidden;
+    padding-bottom: 50px;
+}
+
+.navbar {
+    overflow: hidden;
+    background-color: var(--bg-1);    
+}
+
+.navbar a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: var(--col2);
+    color: black;
+}
+
+.button {
+    border: none;
+    color: white;
+    padding: 10px 22px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-family: var(--f-p);
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+.button:hover {
+    border: solid 2px;
+    border-color: var(--col4);
+    background-color: var(--bg-2);
+    color: var(--col4);
+}
+  
+.button1 {
+    background-color: var(--col2);
+    border-radius: 8px;
+}
+
+.button2 {
+    background-color: var(--col4);
+    border-radius: 8px;
+}
+
+.footer {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    background-color: #030201;
+    color: white;
+    padding-left: 20px;
+}
+
+footer ul {
+    list-style: none;
+}
+
+footer a {
+    text-decoration: none;
+    color: white;
+}
+
+footer a:hover {
+    text-decoration: none;
+    color: var(--col2);
+}

@@ -12,7 +12,7 @@
         <h2>G2 Test</h2>
         <p>Enter your details below to register</p>
         <div class="form_con">
-            <form action="" method="get">
+            <form action="" method="post">
                 <fieldset>
                     <legend>Personal Information</legend>
                     <label for="name">First Name</label>
@@ -37,42 +37,54 @@
                     <label for="pnumber">Plate Number</label>
                     <input type="text" id="pnum">
                 </fieldset>
-                <input type="button" value="Submit" onclick="submitForm()"> 
+                <input type="button" id="submit" value="Submit" onclick="submitForm()">
             </form> 
         </div>
     </main>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
-        function submitForm() {
-            // Collect data from the form
-            var formData = {
-                fname: $("#fname").val(),
-                lname: $("#lname").val(),
-                lnum: $("#lnum").val(),
-                age: $("#age").val(),
-                cname: $("#cname").val(),
-                mname: $("#mname").val(),
-                year: $("#year").val(),
-                pnum: $("#pnum").val()
-            };
+         $(document).ready(function () {
+            $("#submit").click(function () {
+                // Collect data from input fields
+                var fname = $("#fname").val();
+                var lname = $("#lname").val();
+                var lnum = $("#lnum").val();
+                var age = $("#age").val();
+                var cname = $("#cname").val();
+                var mname = $("#mname").val();
+                var year = $("#year").val();
+                var pnum = $("#pnum").val();
 
-            // Send data to the server using AJAX
-            $.ajax({
-                type: "POST",
-                url: "/g2test", // Replace with your server endpoint
-                contentType: "application/json",
-                data: JSON.stringify(formData),
-                success: function (response) {
-                    console.log("Data sent successfully:", response);
-                    // Display a pop-up or handle success, if needed
-                    alert('Details sent');
-                },
-                error: function (error) {
-                    console.error("Error sending data:", error);
-                    // Handle error, if needed
-                }
+                // Create data object in JSON format
+                var driverData = {
+                    fname: fname,
+                    lname: lname,
+                    lnum: lnum,
+                    age: age,
+                    cname: cname,
+                    mname: mname,
+                    year: year,
+                    pnum: pnum
+                };
+
+                // Send data to the server using AJAX in JSON format
+                $.ajax({
+                    type: "POST",
+                    url: "/g2_test/submit", // Replace with your server endpoint
+                    contentType: "application/json",
+                    data: JSON.stringify(driverData),
+                    success: function (response) {
+                        console.log("Data sent successfully:", response);
+                        // Display a pop-up or handle success, if needed
+                        alert('Details sent');
+                    },
+                    error: function (error) {
+                        console.error("Error sending data:", error);
+                        // Handle error, if needed
+                    }
+                });
             });
-        }
+        });
     </script>
 </body>
 </html>

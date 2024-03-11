@@ -4,15 +4,23 @@
 <body>
     <%- include('layouts/mainnav'); -%>
     <div class="main">
-            <h2>Welcome Back!</h2>
-            <p>Log in to get started on your driving test!</p>
-            <form action="" method="get">
-                <label for="username">Username</label>
-                <input type="text" id="uname"><br><br>
-                <label for="password">Password</label>
-                <input type="password" id="upass">
-            </form>
-            <a href="/ddash"><button type="button" class="button button2">Sign Up</button></a>           
+            <h2>Hello!</h2>
+            <p>Register a new account!</p>
+            <form action="/signup/users" method="POST">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="uname"><br><br>
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="upass"><br><br>
+                <label for="password">Repeat Password:</label>  
+                <input type="password" name="repeatPassword" id="rpass"><br><br>
+                <label for="usertype">Choose User Type:</label>
+                <select name="userType" id="guser">
+                    <option value="duser">driver</option>
+                    <option value="euser">examiner</option>
+                    <option value="auser">admin</option>
+                </select><br><br>
+                <input type="submit" value="Sign Up">
+            </form>              
     </div>
 </body>
 </html>

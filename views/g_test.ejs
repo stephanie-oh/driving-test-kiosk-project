@@ -9,18 +9,97 @@
     </div>
     <%- include('layouts/dashnav'); -%>
     <main class="main">
-            <h2>G Test</h2>
-            <p>Enter your license number to get your details</p>
-            <form action="" method="get">
-                <label for="lnumber">License Number</label>
-                <input type="text" id="lnum"><br><br>
-                <input type="button" value="Search" id="search">   
-            </form>
-            <div id="result"></div>
+        <h2>G Test</h2>
+        <p>Enter your license number to get your details</p>
+        <form>
+            <label for="lnum">License Number</label>
+            <input type="text" id="lnum"><br><br>
+            <input type="button" value="Search" id="search">   
+        </form>
+        <div id="result"></div>
     </main>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#search").click(function () {
+                // Get license number from input field
+                var licenseNumber = $("#lnum").val();
+
+                // Perform AJAX request to search endpoint
+                $.ajax({
+                    type: "GET",
+                    url: "/gtest/search",
+                    data: { lnum: licenseNumber },
+                    success: function (response) {
+                        // Display user data
+                        if (response) {
+                            $("#result").html("<strong>First Name:</strong> <input type='text' id='editFirstName' value='" + response.firstname + "' disabled><br>" +
+                                              "<strong>Last Name:</strong> <input type='text' id='editLastName' value='" + response.lastname + "' disabled><br>" +
+                                              "<strong>Age:</strong> <input type='text' id='editAge' value='" + response.Age + "' disabled><br>" +
+                                              "<strong>Make:</strong> <input type='text' id='editMake' value='" + response.car_details.make + "' disabled><br>" +
+                                              "<strong>Model:</strong> <input type='text' id='editModel' value='" + response.car_details.model + "' disabled><br>" +
+                                              "<strong>Year:</strong> <input type='text' id='editYear' value='" + response.car_details.year + "' disabled><br>" +
+                                              "<strong>Plate Number:</strong> <input type='text' id='editPlate' value='" + response.car_details.platno + "' disabled><br>" +
+                                              "<button id='editButton'>Edit</button> " +
+                                              "<button id='saveButton' style='display:none;'>Save</button>");
+                            
+                            // Add click event for the "Edit" button
+                            $("#editButton").click(function () {
+                                // Enable input fields for editing
+                                $("input[disabled]").prop("disabled", false);
+                                // Toggle visibility of buttons
+                                $("#editButton").hide();
+                                $("#saveButton").show();
+                            });
+
+                            // Add click event for the "Save" button
+                            $("#saveButton").click(function () {
+                                // Get the edited values
+                                var editedData = {
+                                    firstname: $("#editFirstName").val(),
+                                    lastname: $("#editLastName").val(),
+                                    Age: $("#editAge").val(),
+                                    car_details: {
+                                        make: $("#editMake").val(),
+                                        model: $("#editModel").val(),
+                                        year: $("#editYear").val(),
+                                        platno: $("#editPlate").val()
+                                    }
+                                };
+
+                                // Perform AJAX request to update endpoint
+                                $.ajax({
+                                    type: "PUT",  // Use the appropriate HTTP method (PUT or POST) for updates
+                                    url: "/gtest/update",  // Replace with your server endpoint for updates
+                                    contentType: "application/json",
+                                    data: JSON.stringify(editedData),
+                                    success: function (updateResponse) {
+                                        console.log("Update successful:", updateResponse);
+                                        // Handle success, display a message, etc.
+                                    },
+                                    error: function (updateError) {
+                                        console.error("Error updating user:", updateError);
+                                        // Handle error, display a message, etc.
+                                    }
+                                });
+
+                                // Disable input fields after saving
+                                $("input").prop("disabled", true);
+                                // Toggle visibility of buttons
+                                $("#editButton").show();
+                                $("#saveButton").hide();
+                            });
+                        } else {
+                            $("#result").html("User not found");
+                        }
+                    },
+                    error: function (error) {
+                        console.error("Error searching for user:", error);
+                        // Handle error, display a message, etc.
+                    }
+                });
+            });
+        });
+    </script>
 </body>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    
-</script>
 </html>

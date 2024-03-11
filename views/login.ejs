@@ -6,13 +6,13 @@
     <div class="main">
             <h2>Welcome Back!</h2>
             <p>Log in to get started on your driving test!</p>
-            <form action="" method="get">
+            <form action="/login" method="POST">
                 <label for="username">Username</label>
-                <input type="text" id="uname"><br><br>
+                <input type="text" name="username" id="uname"><br><br>
                 <label for="password">Password</label>
-                <input type="password" id="upass">
-            </form>
-            <a href="/ddash"><button type="button" class="button button2">Log In</button></a>           
+                <input type="password" name="password" id="upass"><br><br>
+                <button type="submit" class="button button2">Log In</button>
+              </form>          
     </div>
 </body>
 </html>

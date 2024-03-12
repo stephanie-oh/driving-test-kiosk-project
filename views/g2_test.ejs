@@ -1,90 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <%- include('layouts/header'); -%>
-</head>
-<body>
+  <%- include('layouts/header'); -%>
+  <body>
     <div class="header">
         <h1>G2 Test</h1>
     </div>
     <%- include('layouts/dashnav'); -%>
-    <main class="main">
-        <h2>G2 Test</h2>
-        <p>Enter your details below to register</p>
-        <div class="form_con">
-            <form action="" method="post">
-                <fieldset>
-                    <legend>Personal Information</legend>
-                    <label for="name">First Name</label>
-                    <input type="text" id="fname"><br><br>
-                    <label for="name">Last Name</label>
-                    <input type="text" id="lname"><br><br>
-                    <label for="age">Age</label>
-                    <input type="number" id="age"><br><br>
-                    <label for="date">Date of Birth</label>
-                    <input type="date" id="dob"><br><br>
-                    <label for="lnumber">License Number</label>
-                    <input type="text" id="lnum">
-                </fieldset>
-                <fieldset>
-                    <legend>Car Information</legend>
-                    <label for="name">Make</label>
-                    <input type="text" id="cname"><br><br>
-                    <label for="name">Model</label>
-                    <input type="text" id="mname"><br><br>
-                    <label for="age">Year</label>
-                    <input type="number" id="year"><br><br>
-                    <label for="pnumber">Plate Number</label>
-                    <input type="text" id="pnum">
-                </fieldset>
-                <input type="button" id="submit" value="Submit" onclick="submitForm()">
-            </form> 
-        </div>
-    </main>
+    <div class="main">
+      <h2>G2 Test</h2>
+      <p>Enter your details below to register</p>
+      <div class="form_con">
+        <form id="g2Form" action="" method="post">
+          <!-- Existing fields -->
+          <fieldset>
+            <legend>Personal Information</legend>
+            <label for="fname">First Name</label>
+            <input type="text" id="fname" name="fname"><br><br>
+            <label for="lname">Last Name</label>
+            <input type="text" id="lname" name="lname"><br><br>
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age"><br><br>
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" name="dob"><br><br>
+            <label for="lnum">License Number</label>
+            <input type="text" id="lnum" name="lnum">
+          </fieldset>
+          <!-- Additional fields for g2page -->
+          <fieldset>
+            <legend>Car Information</legend>
+            <label for="cname">Make</label>
+            <input type="text" id="cname" name="cname"><br><br>
+            <label for="mname">Model</label>
+            <input type="text" id="mname" name="mname"><br><br>
+            <label for="year">Year</label>
+            <input type="number" id="year" name="year"><br><br>
+            <label for="pnum">Plate Number</label>
+            <input type="text" id="pnum" name="pnum">
+          </fieldset>
+          <input type="button" id="submit" value="Submit" onclick="submitForm()">
+        </form>
+      </div>
+    </div>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
-         $(document).ready(function () {
-            $("#submit").click(function () {
-                // Collect data from input fields
-                var fname = $("#fname").val();
-                var lname = $("#lname").val();
-                var lnum = $("#lnum").val();
-                var age = $("#age").val();
-                var cname = $("#cname").val();
-                var mname = $("#mname").val();
-                var year = $("#year").val();
-                var pnum = $("#pnum").val();
+      $(document).ready(function () {
+        $("#submit").click(function () {
+          // Collect data from input fields
+          var fname = $("#fname").val();
+          var lname = $("#lname").val();
+          var age = $("#age").val();
+          var dob = $("#dob").val();
+          var lnum = $("#lnum").val();
+          var cname = $("#cname").val();
+          var mname = $("#mname").val();
+          var year = $("#year").val();
+          var pnum = $("#pnum").val();
 
-                // Create data object in JSON format
-                var driverData = {
-                    fname: fname,
-                    lname: lname,
-                    lnum: lnum,
-                    age: age,
-                    cname: cname,
-                    mname: mname,
-                    year: year,
-                    pnum: pnum
-                };
+          // Create data object in JSON format
+          var userData = {
+            fname: fname,
+            lname: lname,
+            age: age,
+            dob: dob,
+            lnum: lnum,
+            cname: cname,
+            mname: mname,
+            year: year,
+            pnum: pnum
+          };
 
-                // Send data to the server using AJAX in JSON format
-                $.ajax({
-                    type: "POST",
-                    url: "/g2_test/submit", // Replace with your server endpoint
-                    contentType: "application/json",
-                    data: JSON.stringify(driverData),
-                    success: function (response) {
-                        console.log("Data sent successfully:", response);
-                        // Display a pop-up or handle success, if needed
-                        alert('Details sent');
-                    },
-                    error: function (error) {
-                        console.error("Error sending data:", error);
-                        // Handle error, if needed
-                    }
-                });
-            });
+          // Send data to the server using AJAX in JSON format
+          $.ajax({
+            type: "PUT",
+            url: "/g2test/update-details/:userId", // Replace USER_ID with the actual user ID
+            contentType: "application/json",
+            data: JSON.stringify(userData),
+            success: function (response) {
+              console.log("Data sent successfully:", response);
+              // Display a pop-up or handle success, if needed
+              alert('Details sent');
+            },
+            error: function (error) {
+              console.error("Error sending data:", error);
+              // Handle error, if needed
+            }
+          });
         });
+      });
     </script>
-</body>
+  </body>
 </html>

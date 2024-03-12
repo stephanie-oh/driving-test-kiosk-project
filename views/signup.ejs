@@ -6,7 +6,7 @@
     <div class="main">
             <h2>Hello!</h2>
             <p>Register a new account!</p>
-            <form action="/signup/users" method="POST">
+            <form id="signupForm">
                 <label for="username">Username:</label>
                 <input type="text" name="username" id="uname"><br><br>
                 <label for="password">Password:</label>
@@ -19,8 +19,50 @@
                     <option value="euser">examiner</option>
                     <option value="auser">admin</option>
                 </select><br><br>
-                <input type="submit" value="Sign Up">
+                <input type="submit" value="Sign Up" onclick="submitForm()">
             </form>              
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#signupForm").submit(function (event) {
+                event.preventDefault();
+
+                var username = $("#uname").val();
+                var password = $("#upass").val();
+                var repeatPassword = $("#rpass").val();
+                var userType = $("#guser").val();
+
+                if (password !== repeatPassword) {
+                    alert('Password and repeat password do not match');
+                    return;
+                }
+
+                var userData = {
+                    username: username,
+                    password: password,
+                    userType: userType
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/signup",
+                    contentType: "application/json",
+                    data: JSON.stringify(userData),
+                    success: function (response) {
+                        console.log("Data sent successfully:", response);
+                        alert('User signed up successfully');
+
+                        console.log("Redirecting to login page...");
+                        window.location.href = '/login';
+                    },
+
+                    error: function (error) {
+                        console.error("Error sending data:", error);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

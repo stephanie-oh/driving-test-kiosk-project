@@ -1,12 +1,17 @@
 const express = require('express');
+const session = require('express-session');
+const uuid = require('uuid');
 const path = require('path');
 const ejs = require('ejs');
 
 const app = new express();
 const mongoose = require('mongoose');
-const Driver = require('./models/driver.js');
+const bcrypt = require('bcrypt');
 const User = require('./models/user.js');
-
+const generateSessionSecret = (req, res, next) => {
+  req.session.secret = uuid.v4(); // Generate a new UUID as the session secret
+  next();
+};
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -15,7 +20,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-// Connect to MongoDB
+app.use(session({
+  secret: 'pancake',
+  resave: false,
+  saveUninitialized: true,
+}));
+
+app.use(generateSessionSecret);
+
 mongoose.connect('mongodb+srv://Stephanie:F0fcnUAVhtAQz1io@clusteroh.vnfhsuq.mongodb.net/gtest', {
   useNewUrlParser: true,
 });
@@ -32,54 +44,56 @@ app.get('/login', (req,res) => {
 });
 
 app.post('/login', async (req, res) => {
-    try {
+  try {
       const { username, password } = req.body;
-  
-      // Find the user in the database
-      const user = await User.findOne({ username, password });
-  
-      if (user) {
-        // Store user data in session
-        req.session.user = user;
-        res.redirect('/ddash'); // Redirect to the dashboard or any other page
-      } else {
-        res.send('<script>alert("Invalid username or password"); window.location.href="/login";</script>');
+
+      const user = await User.findOne({ username });
+
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
       }
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('<script>alert("Internal Server Error"); window.location.href="/login";</script>');
-    }
-  });
+
+      const hashedPassword = await bcrypt.hash(password.trim(), 10);
+      console.log('Received Password (Hashed):', hashedPassword);
+      console.log('Stored Password:', user.password);
+
+      const passwordMatch = await bcrypt.compare(password.trim(), user.password);
+
+      if (!passwordMatch) {
+          return res.status(401).json({ error: 'Invalid password' });
+      }
+
+      res.status(200).json({ message: 'Login successful', username: user.username, userId: user._id });
+  } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ error: 'Error during login' });
+  }
+});
 
 app.get('/signup', (req,res) => {
     // res.sendFile(path.resolve(__dirname, 'pages/signup.html'));
     res.render('signup');
 });
 
-app.post('/signup/users', async (req, res) => {
-    try {
-      // Extract data from the request body
-      const { username, password } = req.body;
-  
-      // Create a new user instance
-      const newUser = new User({
-        username,
-        password,
-      });
-  
-      // Save the user to the database
-      await newUser.save();
-  
-      // Respond with a success message
-      res.send(
-        '<script>alert("User signed up successfully!"); window.location.href="/login";</script>'
-      );
-    } catch (error) {
-      // Handle errors
-      console.error(error);
-      res.status(500).send('<script>alert("Internal Server Error"); window.location.href="/signup";</script>');
-    }
-  });
+app.post('/signup', async (req, res) => {
+  try {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+
+    const newUser = new User({
+    username: req.body.username.trim(),
+    password: hashedPassword,
+    });
+
+    console.log('Hashed Password:', hashedPassword);
+
+    const savedUser = await newUser.save();
+
+    res.status(201).json({ message: 'User signed up successfully', user: savedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Error signing up user' });
+  }
+});
 
 app.get('/ddash', (req,res) => {
     // res.sendFile(path.resolve(__dirname, 'pages/ddashboard.html'));
@@ -96,68 +110,38 @@ app.get('/g2test', (req,res) => {
     res.render('g2_test');
 });
 
-app.post('/g2_test/submit', async (req, res) => {
-    try {
-        const { fname, lname, lnum, age, cname, mname, year, pnum } = req.body;
+app.put('/g2test/update-details/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
 
-        const driver = await Driver.create({
-            firstname: fname,
-            lastname: lname,
-            "License No": lnum,
-            Age: age,
-            car_details: {
-                make: cname,
-                model: mname,
-                year: year,
-                platno: pnum,
-            }
-        });
-
-        console.log(driver);
-        res.status(200).json({ message: "Data saved successfully" });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: "Internal Server Error" });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
     }
-});
-  
-app.get('/gtest/search', async (req, res) => {
-    try {
-        const licenseNumber = req.query.lnum;
 
-        if (!licenseNumber) {
-            return res.status(400).json({ message: 'License number is required' });
-        }
+    const existingUser = await User.findById(userId);
 
-        const driver = await Driver.findOne({ "License No": licenseNumber });
-
-        if (!driver) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.json(driver);
-    } catch (error) {
-        console.error('Error searching for user:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+    if (!existingUser) {
+      return res.status(404).json({ error: 'User not found' });
     }
-});
 
-app.put('/gtest/update', async (req, res) => {
-    try {
-        const updatedData = req.body; // Assuming the request body contains the updated data
+    existingUser.additionalDetails = {
+      fname: req.body.fname,
+      lname: req.body.lname,
+      age: req.body.age,
+      dob: req.body.dob,
+      lnum: req.body.lnum,
+      cname: req.body.cname,
+      mname: req.body.mname,
+      year: req.body.year,
+      pnum: req.body.pnum,
+    };
 
-        // Perform the update in the database based on the license number
-        const result = await Driver.updateOne({ "License No": updatedData.licenseNumber }, { $set: updatedData });
+    const updatedUser = await existingUser.save();
 
-        if (result.nModified === 0) {
-            return res.status(404).json({ message: 'User not found or no changes made' });
-        }
-
-        res.json({ message: 'Update successful' });
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    res.status(200).json({ message: 'User details updated successfully', user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating user details' });
+  }
 });
 
 app.listen(4000, () => {

@@ -15,17 +15,6 @@ const userSchema = new Schema({
     year: Number,
     platno: String,
   },
-  additionalDetails: {
-    fname: String,
-    lname: String,
-    age: Number,
-    dob: Date,
-    lnum: String,
-    cname: String,
-    mname: String,
-    year: Number,
-    pnum: String,
-  },
 });
 
 const User = mongoose.model('User', userSchema);

@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   firstname: String,
   lastname: String,
-  "License No": { type: String, unique: true },
+  "License No": String,
   Age: Number,
   username: String,
   password: String,
@@ -17,6 +17,21 @@ const userSchema = new Schema({
   },
 });
 
+// const userSchema = new Schema({
+//   firstname: 'default', 
+//   lastname: 'default', 
+//   LicenseNo: 'default', 
+//   Age: 0, 
+//   Username: 'demo', 
+//   Password: 'demo', //Encrypted value 
+//   UserType: 'Driver', 
+//   car_details: { 
+//     make: 'default', 
+//     model: 'default', 
+//     year: '0',
+//     platno: 'default'
+//   }
+// });
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

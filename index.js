@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('./models/user.js');
 const generateSessionSecret = (req, res, next) => {
-  req.session.secret = uuid.v4(); // Generate a new UUID as the session secret
+  req.session.secret = uuid.v4();
   next();
 };
 
@@ -34,32 +34,26 @@ mongoose.connect('mongodb+srv://Stephanie:F0fcnUAVhtAQz1io@clusteroh.vnfhsuq.mon
 
 
 app.get('/', (req,res) => {
-    // res.sendFile(path.resolve(__dirname, 'pages/index.html'));
     res.render('index');
 });
 
 app.get('/login', (req,res) => {
-    // res.sendFile(path.resolve(__dirname, 'pages/login.html'));
     res.render('login');
 });
 
 app.get('/signup', (req,res) => {
-    // res.sendFile(path.resolve(__dirname, 'pages/signup.html'));
     res.render('signup');
 });
 
 app.get('/ddash', (req,res) => {
-    // res.sendFile(path.resolve(__dirname, 'pages/ddashboard.html'));
     res.render('ddashboard');
 });
 
 app.get('/gtest', (req,res) => {
-    // res.sendFile(path.resolve(__dirname, 'pages/g_test.html'));
     res.render('g_test');
 });
 
 app.get('/g2test', (req,res) => {
-    // res.sendFile(path.resolve(__dirname, 'pages/g2_test.html'));
     res.render('g2_test');
 });
 

@@ -14,37 +14,6 @@
             <button type="submit" class="button button2">Log In</button>
         </form>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#loginForm").submit(function (event) {
-                event.preventDefault();
-
-                var username = $("#uname").val();
-                var password = $("#upass").val();
-
-                var loginData = {
-                    username: username,
-                    password: password
-                };
-
-                $.ajax({
-                    type: "POST",
-                    url: "/login",
-                    contentType: "application/json",
-                    data: JSON.stringify(loginData),
-                    success: function (response) {
-                        console.log("Login successful:", response);
-
-                        window.location.href = '/ddash';
-                    },
-                    error: function (error) {
-                        console.error("Error during login:", error);
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>

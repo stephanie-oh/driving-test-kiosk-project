@@ -10,7 +10,7 @@
       <h2>G2 Test</h2>
       <p>Enter your details below to register</p>
       <div class="form_con">
-        <form id="g2Form" action="/api/additional-details/:username" method="post">
+        <form id="g2Form" action="/update_details" method="post">
           <!-- Existing fields -->
           <fieldset>
             <legend>Personal Information</legend>
@@ -23,26 +23,69 @@
             <label for="dob">Date of Birth</label>
             <input type="date" id="dob" name="dob"><br><br>
             <label for="lnum">License Number</label>
-            <input type="text" id="lnum" name="License No">
+            <input type="text" id="lnum" name="LicenseNo">
           </fieldset>
           <!-- Additional fields for g2page -->
           <fieldset>
             <legend>Car Information</legend>
             <label for="cname">Make</label>
-            <input type="text" id="cname" name="car_details.make"><br><br>
+            <input type="text" id="cname" name="car_details.make" required><br><br>
             <label for="mname">Model</label>
-            <input type="text" id="mname" name="car_details.model"><br><br>
+            <input type="text" id="mname" name="car_details.model" required><br><br>
             <label for="year">Year</label>
-            <input type="number" id="year" name="car_details.year"><br><br>
-            <label for="pnum">Plate Number</label>
+            <input type="number" id="year" name="car_details.year" required><br><br>
+            <label for="pnum" required>Plate Number</label>
             <input type="text" id="pnum" name="car_details.platno">
           </fieldset>
-          <input type="button" id="submit" value="Submit" onclick="submitForm()">
+          <button type="submit">Submit</button>
         </form>
       </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
+      document.getElementById('g2Form').addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent the default form submission
       
-    </script>
+          // Correctly define the formElement by selecting the form
+          const formElement = document.getElementById('g2Form');
+      
+          const formData = new FormData(formElement);
+          const data = {};
+      
+          formData.forEach((value, key) => {
+              // Check for nested keys like 'car_details.make'
+              if(key.includes('.')) {
+                  let parts = key.split('.');
+                  let lastPart = parts.pop();
+                  let obj = parts.reduce((acc, curr) => acc[curr] = acc[curr] || {}, data);
+                  obj[lastPart] = value;
+              } else {
+                  data[key] = value;
+              }
+          });
+      
+          fetch('/update-details', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+          })
+          .then(response => {
+              if (response.ok) {
+                  return response.json(); // Only parse as JSON if response is OK
+              }
+              throw new Error('Network response was not ok.');
+          })
+          .then(data => {
+              console.log('Success:', data);
+              // Handle success - e.g., display a success message or redirect
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+              // Handle errors - e.g., display an error message
+          });
+      });
+      </script>      
   </body>
 </html>

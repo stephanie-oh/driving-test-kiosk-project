@@ -6,63 +6,38 @@
     <div class="main">
             <h2>Hello!</h2>
             <p>Register a new account!</p>
-            <form id="signupForm">
+            <form id="signupForm" action="/signup" method="POST">
                 <label for="username">Username:</label>
-                <input type="text" name="username" id="uname"><br><br>
+                <input type="text" name="username" id="username" required><br><br>
                 <label for="password">Password:</label>
-                <input type="password" name="password" id="upass"><br><br>
-                <label for="password">Repeat Password:</label>  
-                <input type="password" name="repeatPassword" id="rpass"><br><br>
-                <label for="usertype">Choose User Type:</label>
-                <select name="userType" id="guser">
-                    <option value="duser">driver</option>
-                    <option value="euser">examiner</option>
-                    <option value="auser">admin</option>
+                <input type="password" name="password" id="password" required><br><br>
+                <label for="repeatPassword">Repeat Password:</label>
+                <input type="password" name="repeatPassword" id="repeatPassword" required><br><br>
+                <label for="userType">User Type:</label>
+                <select name="userType" id="userType" required>
+                    <option value="Driver">Driver</option>
+                    <option value="Examiner">Examiner</option>
+                    <option value="Admin">Admin</option>
                 </select><br><br>
-                <input type="submit" value="Sign Up" onclick="submitForm()">
+                <button type="button" onclick="submitForm()" class="button button2">Sign Up</button>
             </form>              
     </div>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
-        $(document).ready(function () {
-            $("#signupForm").submit(function (event) {
-                event.preventDefault();
+      function submitForm() {
+        var username = document.getElementById('username').value;
+        var password = document.getElementById('password').value;
+        var repeatPassword = document.getElementById('repeatPassword').value;
+        var userType = document.getElementById('userType').value;
 
-                var username = $("#uname").val();
-                var password = $("#upass").val();
-                var repeatPassword = $("#rpass").val();
-                var userType = $("#guser").val();
+        // Simple client-side validation
+        if (password !== repeatPassword) {
+          alert('Passwords do not match.');
+          return false; // Stop the form from being submitted
+        }
 
-                if (password !== repeatPassword) {
-                    alert('Password and repeat password do not match');
-                    return;
-                }
-
-                var userData = {
-                    username: username,
-                    password: password,
-                    userType: userType
-                };
-
-                $.ajax({
-                    type: "POST",
-                    url: "/signup",
-                    contentType: "application/json",
-                    data: JSON.stringify(userData),
-                    success: function (response) {
-                        console.log("Data sent successfully:", response);
-                        alert('User signed up successfully');
-
-                        console.log("Redirecting to login page...");
-                        window.location.href = '/login';
-                    },
-
-                    error: function (error) {
-                        console.error("Error sending data:", error);
-                    }
-                });
-            });
-        });
+        document.getElementById('signupForm').submit();
+      }
     </script>
 </body>
 </html>

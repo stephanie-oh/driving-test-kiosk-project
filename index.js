@@ -4,7 +4,7 @@ const uuid = require('uuid');
 const path = require('path');
 const ejs = require('ejs');
 
-const app = new express();
+const app = express();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('./models/user.js');
@@ -12,6 +12,7 @@ const generateSessionSecret = (req, res, next) => {
   req.session.secret = uuid.v4();
   next();
 };
+const { ensureAuthenticated, ensureIsDriver } = require('./middleware/access_control');
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
@@ -19,14 +20,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-
 app.use(session({
   secret: 'pancake',
   resave: false,
   saveUninitialized: true,
 }));
-
-app.use(generateSessionSecret);
 
 mongoose.connect('mongodb+srv://Stephanie:F0fcnUAVhtAQz1io@clusteroh.vnfhsuq.mongodb.net/gtest', {
   useNewUrlParser: true,
@@ -45,70 +43,113 @@ app.get('/signup', (req,res) => {
     res.render('signup');
 });
 
-app.get('/ddash', (req,res) => {
-    res.render('ddashboard');
+// app.get('/ddash', (req,res) => {
+//     res.render('ddashboard');
+// });
+
+// app.get('/gtest', (req,res) => {
+//     res.render('g_test');
+// });
+
+// app.get('/g2test', (req,res) => {
+//     res.render('g2_test');
+// });
+
+app.get('/g2test', ensureAuthenticated, ensureIsDriver, (req, res) => {
+  res.render('g2_test');
 });
 
-app.get('/gtest', (req,res) => {
-    res.render('g_test');
+
+// app.get('/gtest', ensureAuthenticated, ensureIsDriver, (req, res) => {
+//   // Logic to display gpage
+//   res.send('G Page - Accessible to drivers');
+// });
+
+app.get('/ddash', ensureAuthenticated, (req, res) => {
+  res.render('ddashboard', { userType: req.session.userType });
 });
 
-app.get('/g2test', (req,res) => {
-    res.render('g2_test');
-});
 
 
 app.post('/signup', async (req, res) => {
   try {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-
-    const newUser = new User({
-    username: req.body.username.trim(),
-    password: hashedPassword,
+    const { username, password, userType } = req.body;
+    const userExists = await User.findOne({ Username: username });
+    if (userExists) {
+      return res.status(400).send('User already exists');
+    }
+    const user = new User({
+      Username: username,
+      Password: password, // Will be hashed in the pre-save middleware
+      UserType: userType,
     });
-
-    console.log('Hashed Password:', hashedPassword);
-
-    const savedUser = await newUser.save();
-
-    res.status(201).json({ message: 'User signed up successfully', user: savedUser });
+    await user.save();
+    res.redirect('/login');
   } catch (error) {
-    res.status(500).json({ error: 'Error signing up user' });
+    console.error(error);
+    res.status(500).send('Error signing up user');
   }
 });
+
 
 app.post('/login', async (req, res) => {
-  try {
-      const { username, password } = req.body;
-
-      const user = await User.findOne({ username });
-
-      if (!user) {
-          return res.status(404).json({ error: 'User not found' });
-      }
-
-      const hashedPassword = await bcrypt.hash(password.trim(), 10);
-      console.log('Received Password (Hashed):', hashedPassword);
-      console.log('Stored Password:', user.password);
-
-      const passwordMatch = await bcrypt.compare(password.trim(), user.password);
-
-      if (!passwordMatch) {
-          return res.status(401).json({ error: 'Invalid password' });
-      }
-
-      req.session.user = {
-        username: user.username,
-        userId: user._id,
-      };
-
-      res.status(200).json({ message: 'Login successful', username: user.username, userId: user._id });
-  } catch (error) {
-      console.error("Error during login:", error);
-      res.status(500).json({ error: 'Error during login' });
+  const { username, password } = req.body;
+  const user = await User.findOne({ Username: username });
+  if (user && await bcrypt.compare(password, user.Password)) {
+    req.session.userId = user.id;
+    req.session.userType = user.UserType;
+    res.redirect('/ddash'); // Adjust as needed
+  } else {
+    res.status(401).send('Invalid credentials');
   }
 });
+
+app.post('/update-details', async (req, res) => {
+  const { firstname, lastname, Age, dob, LicenseNo, car_details } = req.body;
+
+  // Assuming the user's ID is stored in session after they log in
+  const userId = req.session.userId;
+
+  try {
+      await User.findByIdAndUpdate(userId, {
+          $set: {
+              firstname: firstname,
+              lastname: lastname,
+              Age: Age,
+              dob: dob,
+              LicenseNo: LicenseNo,
+              "car_details.make": car_details.make,
+              "car_details.model": car_details.model,
+              "car_details.year": car_details.year,
+              "car_details.platno": car_details.platno
+          }
+      }, { new: true }); // { new: true } option returns the document after update
+
+      res.json({ message: 'User details updated successfully.' });
+  } catch (error) {
+      console.error('Error updating user details:', error);
+      res.status(500).json({ error: 'Error updating user details.' });
+  }
+});
+
+app.get('/gtest', ensureAuthenticated, ensureIsDriver, async (req, res) => {
+  const userId = req.session.userId;
+  
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    
+    // Render the gtest page with user details
+    res.render('g_test', { user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error fetching user details');
+  }
+});
+
+
 
 app.listen(4000, () => {
     console.log('App listening on port 4000');

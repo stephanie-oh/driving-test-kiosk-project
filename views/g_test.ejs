@@ -11,33 +11,16 @@
     <main class="main">
         <h2>G Test</h2>
         <p>License details</p>
-        <div id="result"></div>
+        <div id="result">
+            <p>First Name: <%= user.firstname %></p>
+            <p>Last Name: <%= user.lastname %></p>
+            <p>Age: <%= user.Age %></p>
+            <p>License Number: <%= user.LicenseNo %></p>
+            <p>Car Make: <%= user.car_details.make %></p>
+            <p>Car Model: <%= user.car_details.model %></p>
+            <p>Car Year: <%= user.car_details.year %></p>
+            <p>Plate Number: <%= user.car_details.platno %></p>
+        </div>
     </main>
-
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $.ajax({
-                type: "GET",
-                url: "/gtest/search",
-                success: function (user) {
-                    var userDetails = `
-                        <p>First Name: ${user.firstname}</p>
-                        <p>Last Name: ${user.lastname}</p>
-                        <p>License Number: ${user['License No']}</p>
-                        <p>Age: ${user.Age}</p>
-                        <p>Car Make: ${user.car_details.make}</p>
-                        <p>Car Model: ${user.car_details.model}</p>
-                        <p>Car Year: ${user.car_details.year}</p>
-                        <p>Plate Number: ${user.car_details.platno}</p>
-                    `;
-                    $("#result").html(userDetails);
-                },
-                error: function (error) {
-                    console.error("Error fetching user details:", error);
-                }
-            });
-        });
-    </script>
 </body>
 </html>

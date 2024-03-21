@@ -8,6 +8,7 @@ const app = express();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const User = require('./models/user.js');
+const Appointment = require('./models/appointment.js');
 const generateSessionSecret = (req, res, next) => {
   req.session.secret = uuid.v4();
   next();
@@ -43,66 +44,96 @@ app.get('/signup', (req,res) => {
     res.render('signup');
 });
 
-// app.get('/ddash', (req,res) => {
-//     res.render('ddashboard');
-// });
 
-// app.get('/gtest', (req,res) => {
-//     res.render('g_test');
-// });
+app.get('/g2test', ensureAuthenticated, ensureIsDriver, async (req, res) => {
+  let { selectedDate } = req.query; // You might get this from a query parameter or another method
+  selectedDate = selectedDate || new Date().toISOString().split('T')[0]; // Default to today if no date is selected
 
-// app.get('/g2test', (req,res) => {
-//     res.render('g2_test');
-// });
+  const appointments = await Appointment.find({ 
+      date: selectedDate,
+      isTimeSlotAvailable: true 
+  });
 
-app.get('/g2test', ensureAuthenticated, ensureIsDriver, (req, res) => {
-  res.render('g2_test');
+  res.render('g2_test', { appointments, selectedDate });
 });
-
-
-// app.get('/gtest', ensureAuthenticated, ensureIsDriver, (req, res) => {
-//   // Logic to display gpage
-//   res.send('G Page - Accessible to drivers');
-// });
 
 app.get('/ddash', ensureAuthenticated, (req, res) => {
   res.render('ddashboard', { userType: req.session.userType });
 });
 
+app.get('/adash', ensureAuthenticated, (req, res) => {
+  res.render('adashboard', { userType: req.session.userType})
+});
+
+app.get('/appt', ensureAuthenticated, (req, res) => {
+  res.render('appointment', { userType: req.session.userType})
+});
 
 
 app.post('/signup', async (req, res) => {
   try {
     const { username, password, userType } = req.body;
-    const userExists = await User.findOne({ Username: username });
+    const userExists = await User.findOne({ username: username });
     if (userExists) {
       return res.status(400).send('User already exists');
     }
     const user = new User({
-      Username: username,
-      Password: password, // Will be hashed in the pre-save middleware
-      UserType: userType,
+      username: username,
+      password: password,
+      userType: userType,
     });
     await user.save();
-    res.redirect('/login');
+    req.session.userId = user._id;
+    req.session.userType = userType;
+
+    // Redirect based on userType
+    if (userType === 'Admin') {
+      return res.redirect('/adash');
+    } else {
+      return res.redirect('/ddash');
+    }
   } catch (error) {
-    console.error(error);
+    console.error("Error during sign-up:", error);
     res.status(500).send('Error signing up user');
-  }
+  }  
 });
 
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = await User.findOne({ Username: username });
-  if (user && await bcrypt.compare(password, user.Password)) {
-    req.session.userId = user.id;
-    req.session.userType = user.UserType;
-    res.redirect('/ddash'); // Adjust as needed
-  } else {
-    res.status(401).send('Invalid credentials');
+
+  try {
+    const user = await User.findOne({ username: username });
+    if (!user) {
+      // User not found
+      return res.status(401).send('Invalid credentials');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      // Passwords do not match
+      return res.status(401).send('Invalid credentials');
+    }
+
+    // Assuming you're using session-based authentication
+    req.session.userId = user._id;
+    req.session.userType = user.userType;
+
+    // Redirect based on userType
+    if (user.userType === 'Admin') {
+      res.redirect('/adash');
+    } else if (user.userType === 'Driver') {
+      res.redirect('/ddash');
+    } else {
+      // Handle other user types or default case
+      res.redirect('/');
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).send('Error during login');
   }
 });
+
 
 app.post('/update-details', async (req, res) => {
   const { firstname, lastname, Age, dob, LicenseNo, car_details } = req.body;
@@ -146,6 +177,57 @@ app.get('/gtest', ensureAuthenticated, ensureIsDriver, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error fetching user details');
+  }
+}); 
+
+app.post('/create-appointment', async (req, res) => {
+  const { date, time } = req.body;
+
+  try {
+    const existingAppointment = await Appointment.findOne({ date, time });
+    if (existingAppointment) {
+      return res.status(400).json({ message: 'This appointment slot already exists.' });
+    }
+
+    const newAppointment = new Appointment({ date, time });
+    await newAppointment.save();
+    res.json({ message: 'Appointment slot created successfully.' });
+  } catch (error) {
+    console.error('Error creating appointment slot:', error);
+    res.status(500).json({ message: 'Failed to create appointment slot.' });
+  }
+});
+
+// Example route in your server setup
+app.get('/appointments', ensureAuthenticated, async (req, res) => {
+  const { date } = req.query; // Assuming the date is passed as a query parameter
+  try {
+      const appointments = await Appointment.find({ date: date, isTimeSlotAvailable: true });
+      res.json(appointments);
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Error fetching appointments.');
+  }
+});
+
+
+// Example route in your server setup
+app.post('/book-appointment', ensureAuthenticated, async (req, res) => {
+  const { appointmentId } = req.body;
+  const userId = req.session.userId; // Assuming you store userId in the session upon login
+
+  try {
+      const appointment = await Appointment.findByIdAndUpdate(appointmentId, { isTimeSlotAvailable: false }, { new: true });
+      if (!appointment) {
+          return res.status(404).send('Appointment not found or already booked.');
+      }
+
+      await User.findByIdAndUpdate(userId, { appointmentId: appointment._id });
+
+      res.json({ message: 'Appointment booked successfully.', appointment });
+  } catch (error) {
+      console.error(error);
+      res.status(500).send('Error booking the appointment.');
   }
 });
 

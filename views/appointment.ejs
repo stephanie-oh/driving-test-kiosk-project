@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('layouts/header'); -%>
+  <body>
+    <div class="header">
+        <h1>Appointment</h1>
+    </div>
+    <%- include('layouts/adashnav'); -%>
+    <div class="main">
+      <h2>Appointment Creation</h2>
+      <p>Create an appointment slot</p>
+      <div class="form_con">
+        <form action="/create-appointment" method="POST">
+          <label for="date">Date:</label>
+          <input type="date" id="date" name="date" required><br><br>
+          <label for="time">Time:</label>
+          <input type="time" id="time" name="time" required><br><br>
+          <button type="submit">Add Slot</button>
+          </form>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+      $(document).ready(function() {
+          $('form').on('submit', function(event) {
+              event.preventDefault(); // Prevent the default form submission
+      
+              const formData = {
+                  date: $('#date').val(),
+                  time: $('#time').val()
+              };
+      
+              $.ajax({
+                  type: 'POST',
+                  url: '/create-appointment',
+                  contentType: 'application/json',
+                  data: JSON.stringify(formData),
+                  success: function(response) {
+                      alert('Appointment slot added successfully.');
+                      // Optionally, clear the form or disable the submit button
+                      $('#date').val('');
+                      $('#time').val('');
+                  },
+                  error: function(response) {
+                      alert('Error adding appointment slot.');
+                  }
+              });
+          });
+      });
+      </script>        
+  </body>
+</html>

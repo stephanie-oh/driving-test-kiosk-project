@@ -39,7 +39,11 @@
           </fieldset>
           <button type="submit">Submit</button>
         </form>
-      </div>
+      </div><br>
+      <p>Choose your time slot</p>
+      <input type="date" id="appointmentDatePicker"><br><br>
+      <button id="showSlotsBtn">Show Available Slots</button>
+      <div id="slotsContainer"></div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
@@ -86,6 +90,49 @@
               // Handle errors - e.g., display an error message
           });
       });
-      </script>      
+      </script>
+
+  <script>
+    document.getElementById('showSlotsBtn').addEventListener('click', function() {
+        const selectedDate = document.getElementById('appointmentDatePicker').value;
+        if (!selectedDate) {
+            alert('Please select a date.');
+            return;
+        }
+        fetch(`/appointments?date=${selectedDate}`)
+            .then(response => response.json())
+            .then(slots => {
+                const container = document.getElementById('slotsContainer');
+                container.innerHTML = ''; // Clear previous slots
+                slots.forEach(slot => {
+                    const button = document.createElement('button');
+                    button.textContent = `Book ${slot.time}`;
+                    button.addEventListener('click', () => bookAppointment(slot._id));
+                    container.appendChild(button);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+    
+    function bookAppointment(appointmentId) {
+        fetch('/book-appointment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ appointmentId }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Appointment booked successfully.');
+            // Optionally refresh the slots to reflect the booked slot
+            document.getElementById('showSlotsBtn').click();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to book the appointment.');
+        });
+    }
+    </script>       
   </body>
 </html>

@@ -46,8 +46,8 @@ app.get('/signup', (req,res) => {
 
 
 app.get('/g2test', ensureAuthenticated, ensureIsDriver, async (req, res) => {
-  let { selectedDate } = req.query; // You might get this from a query parameter or another method
-  selectedDate = selectedDate || new Date().toISOString().split('T')[0]; // Default to today if no date is selected
+  let { selectedDate } = req.query;
+  selectedDate = selectedDate || new Date().toISOString().split('T')[0];
 
   const appointments = await Appointment.find({ 
       date: selectedDate,
@@ -86,7 +86,6 @@ app.post('/signup', async (req, res) => {
     req.session.userId = user._id;
     req.session.userType = userType;
 
-    // Redirect based on userType
     if (userType === 'Admin') {
       return res.redirect('/adash');
     } else {
@@ -105,27 +104,22 @@ app.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ username: username });
     if (!user) {
-      // User not found
       return res.status(401).send('Invalid credentials');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      // Passwords do not match
       return res.status(401).send('Invalid credentials');
     }
 
-    // Assuming you're using session-based authentication
     req.session.userId = user._id;
     req.session.userType = user.userType;
 
-    // Redirect based on userType
     if (user.userType === 'Admin') {
       res.redirect('/adash');
     } else if (user.userType === 'Driver') {
       res.redirect('/ddash');
     } else {
-      // Handle other user types or default case
       res.redirect('/');
     }
   } catch (error) {
@@ -138,7 +132,6 @@ app.post('/login', async (req, res) => {
 app.post('/update-details', async (req, res) => {
   const { firstname, lastname, Age, dob, LicenseNo, car_details } = req.body;
 
-  // Assuming the user's ID is stored in session after they log in
   const userId = req.session.userId;
 
   try {
@@ -154,7 +147,7 @@ app.post('/update-details', async (req, res) => {
               "car_details.year": car_details.year,
               "car_details.platno": car_details.platno
           }
-      }, { new: true }); // { new: true } option returns the document after update
+      }, { new: true });
 
       res.json({ message: 'User details updated successfully.' });
   } catch (error) {
@@ -172,7 +165,6 @@ app.get('/gtest', ensureAuthenticated, ensureIsDriver, async (req, res) => {
       return res.status(404).send('User not found');
     }
     
-    // Render the gtest page with user details
     res.render('g_test', { user });
   } catch (error) {
     console.error(error);
@@ -198,9 +190,9 @@ app.post('/create-appointment', async (req, res) => {
   }
 });
 
-// Example route in your server setup
+
 app.get('/appointments', ensureAuthenticated, async (req, res) => {
-  const { date } = req.query; // Assuming the date is passed as a query parameter
+  const { date } = req.query;
   try {
       const appointments = await Appointment.find({ date: date, isTimeSlotAvailable: true });
       res.json(appointments);
@@ -211,10 +203,9 @@ app.get('/appointments', ensureAuthenticated, async (req, res) => {
 });
 
 
-// Example route in your server setup
 app.post('/book-appointment', ensureAuthenticated, async (req, res) => {
   const { appointmentId } = req.body;
-  const userId = req.session.userId; // Assuming you store userId in the session upon login
+  const userId = req.session.userId;
 
   try {
       const appointment = await Appointment.findByIdAndUpdate(appointmentId, { isTimeSlotAvailable: false }, { new: true });

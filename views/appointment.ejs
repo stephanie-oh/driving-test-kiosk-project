@@ -23,7 +23,7 @@
     <script>
       $(document).ready(function() {
           $('form').on('submit', function(event) {
-              event.preventDefault(); // Prevent the default form submission
+              event.preventDefault();
       
               const formData = {
                   date: $('#date').val(),
@@ -37,7 +37,6 @@
                   data: JSON.stringify(formData),
                   success: function(response) {
                       alert('Appointment slot added successfully.');
-                      // Optionally, clear the form or disable the submit button
                       $('#date').val('');
                       $('#time').val('');
                   },

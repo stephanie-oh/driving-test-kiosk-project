@@ -30,10 +30,9 @@
         var repeatPassword = document.getElementById('repeatPassword').value;
         var userType = document.getElementById('userType').value;
 
-        // Simple client-side validation
         if (password !== repeatPassword) {
           alert('Passwords do not match.');
-          return false; // Stop the form from being submitted
+          return false;
         }
 
         document.getElementById('signupForm').submit();

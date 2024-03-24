@@ -11,7 +11,6 @@
       <p>Enter your details below to register</p>
       <div class="form_con">
         <form id="g2Form" action="/update_details" method="post">
-          <!-- Existing fields -->
           <fieldset>
             <legend>Personal Information</legend>
             <label for="fname">First Name</label>
@@ -25,7 +24,6 @@
             <label for="lnum">License Number</label>
             <input type="text" id="lnum" name="LicenseNo">
           </fieldset>
-          <!-- Additional fields for g2page -->
           <fieldset>
             <legend>Car Information</legend>
             <label for="cname">Make</label>
@@ -48,16 +46,13 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
       document.getElementById('g2Form').addEventListener('submit', function(event) {
-          event.preventDefault(); // Prevent the default form submission
-      
-          // Correctly define the formElement by selecting the form
+          event.preventDefault();
           const formElement = document.getElementById('g2Form');
       
           const formData = new FormData(formElement);
           const data = {};
       
           formData.forEach((value, key) => {
-              // Check for nested keys like 'car_details.make'
               if(key.includes('.')) {
                   let parts = key.split('.');
                   let lastPart = parts.pop();
@@ -77,17 +72,15 @@
           })
           .then(response => {
               if (response.ok) {
-                  return response.json(); // Only parse as JSON if response is OK
+                  return response.json();
               }
               throw new Error('Network response was not ok.');
           })
           .then(data => {
               console.log('Success:', data);
-              // Handle success - e.g., display a success message or redirect
           })
           .catch((error) => {
               console.error('Error:', error);
-              // Handle errors - e.g., display an error message
           });
       });
       </script>
@@ -103,7 +96,7 @@
             .then(response => response.json())
             .then(slots => {
                 const container = document.getElementById('slotsContainer');
-                container.innerHTML = ''; // Clear previous slots
+                container.innerHTML = '';
                 slots.forEach(slot => {
                     const button = document.createElement('button');
                     button.textContent = `Book ${slot.time}`;
@@ -125,7 +118,6 @@
         .then(response => response.json())
         .then(data => {
             alert('Appointment booked successfully.');
-            // Optionally refresh the slots to reflect the booked slot
             document.getElementById('showSlotsBtn').click();
         })
         .catch(error => {
